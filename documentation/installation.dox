@@ -1,0 +1,34 @@
+/**
+@page installation dFab Python Library Installation
+@brief Overview of installing the Python library.
+
+Setting PYTHONPATH
+------------------
+
+The library is distributed as a directory tree including scripts, sample data,
+and a package library.  The scripts depend upon Python finding the package
+library.  The most reliable way to configure the Python load path is to add the
+top folder of the package library to the PYTHONPATH environment variable.
+
+E.g, if a user were to unpack dfab.zip or checkout the Subversion repository
+into the folder named /Users/username/src, then that user should add the
+following folder to the PYTHONPATH environment variable:
+
+>  /Users/username/src/dfab/python
+
+This folder contains just one folder named 'dfab'.  So for example, if a script
+has a line 'import dfab.mocap.quaternion', Python will load that module out of
+the tree from below this point.
+
+For example, a user using bash on OS X or Linux could accomplish this by adding
+the following line to their ~/.profile file:
+
+>  export PYTHONPATH="$HOME/src/dfab/python:$PYTHONPATH"
+
+and then reloading it:
+
+>  source ~/.profile
+
+Windows users must generally use the Settings menus.
+
+*/

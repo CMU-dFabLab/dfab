@@ -1,0 +1,25 @@
+/**
+@page resources Software Resources
+@brief Overview of other related software and documentation resources.
+
+
+Other Resources
+---------------
+
+dfab Wiki: http://128.2.108.179/dokuwiki/doku.php
+
+
+External Github Sources
+-----------------------
+
+Notes on downloaded packages.
+
+
++ The original version of optitrack_csv.py was was provided under a BSD open-source license and downloaded from github using the following:
+  >  git clone https://github.com/OlinRoboticsAndBioinspiration/mocap.git
+
+
+
+*/
+
+

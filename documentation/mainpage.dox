@@ -1,0 +1,31 @@
+/**
+@mainpage  dFab Lab Python Library
+@brief Guide to the dFab Python library.
+@tableofcontents
+
+Introduction
+============
+
+The dFab Lab in the School of Architecture at Carnegie Mellon University is a
+research center for digital fabrication and human-robot collaboration.  This
+package provides software tools for running experimental robotic fabrication of
+architectural systems.
+
+
+Contents
+--------
+
+Tutorial and Reference Documentation:
+  + @ref installation - Guide to setting up the library.
+  + @ref calibration - Discussion of coordinates systems for robots and motion capture.
+  + @ref resources - Notes on related documentation.
+
+Automatically generated Python documentation:
+  + @ref dfab       - top-level Python module
+  + @ref dfab.mocap - modules related to motion capture data and coordinates systems (uses numpy)
+  + @ref dfab.rhino - modules intended to run inside Rhino (uses rhinoscriptsyntax)
+  + @ref dfab.debug - modules to assist with testing and debugging script code
+  + @ref scripts    - sample code and utilities for running outside Rhino
+  + @ref rhino_python_examples - sample code for running directly inside Rhino and Grasshopper
+
+*/

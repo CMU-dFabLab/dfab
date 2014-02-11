@@ -1,0 +1,87 @@
+/**
+@page calibration Motion Capture Calibration
+@brief Overview of coordinates system transformations and calibration.
+@authors Garth Zeglin
+@date Created 2014-02-03.
+
+Motion Capture Calibration Overview
+===================================
+
+The Optitrack motion capture system uses an array of cameras (dFab currently
+uses six) to measure the trajectory of marked bodies.  Each camera has an
+infrared illuminator located in a ring around the infrared-sensitive camera.
+The markers use retroreflective material to send light back to the camera so it
+shows up a bright dot in the raw image.
+
+The Optitrack software solves a number of processing problems for us:
+
+<ol>
+<li>Processing the raw image into image-plane marker coordinates.
+<li>Solving for the marker correspondence, i.e., identifying which image-plane dots in different views represent the same marker.
+<li>Computing the relative locations of the cameras from the trajectory of the calibration wand.
+<li>Providing a GUI for specifying the marker set attached to each rigid body.  This includes the identity of each marker and a reference coordinate frame.
+<li>Providing a GUI for locating the world coordinate system within the camera coordinate system.
+<li>Computing the 6-DOF coordinates for each rigid body within the motion capture world coordinate system.
+</ol>
+
+Ideally, the world coordinate system specified within the Optitrack interface
+would exactly match the robot coordinates.  That way, all rigid body
+trajectories reported by the software would already be registered within robot
+coordinates.  However, this is rarely exact, and so a separate calibration
+procedure needs to be followed to compute the transform from the motion capture
+data to true robot coordinates.
+
+Coordinate Systems
+------------------
+
+Following is a brief explanation of the lab nomenclature for coordinate systems.
+
+### World Coordinates (ABB 6640) ###
+
+The base coordinate system for the ABB6640 robot is used as the common system
+for locating any rigid body in the lab.  The origin is the center of the robot
+base when located in home position at the far end of the track.  The X axis
+points down the track, Y to the wall away from the controllers, and Z up, in a
+right-handed coordinate system.
+
+@bug Is the world Z at floor level or top of the track?
+
+### ABB 6640 TCP ###
+
+The default Tool Center Point of the ABB 6640 is the name for a coordinate
+system centered in the end mounting plate, with Z normal to the plate.  The six
+degrees of freedom of this frame are determined by the seven degrees of freedom
+comprising the six robot arm joints and the robot position along the track.
+
+The system is redundant and there is a one-dimensional continuum of possible
+robot poses for most TCP positions, e.g., the robot can move freely on the track
+for some distance while moving the arm to keep the TCP in the same place.  Note
+that the arm kinematics also mean there is a discrete set of different arm
+solutions for many poses, e.g. elbow-up versus elbow-down.
+
+The TCP is normally configured for a given tool as a transform from the default
+TCP to a useful task-related coordinate frame on the specific tool.  E.g., the
+TCP origin might be specified at a cutting tip to allow easy specifications of
+rotation about that point.
+
+@bug Is the default TCP origin the actual robot endplate plane, the base plane
+of the tool changer, or something else?
+
+### Motion Capture Coordinates ###
+
+The motion capture system reports the location and orientation of rigid bodies in
+its own coordinate system.
+
+@bug What are good conventions for configuring the Optitrack coordinates?
+Currently, Y is up; should Z be up instead?
+
+### Wall Coordinates ###
+
+For plastering tasks on a flat wall plane it is useful to specify a coordinate
+frame embedded in the wall.  That way, the wall can be moved and the tool paths
+updated by just changing one transform.  (On the ABB, this can also be
+accomplished by specifying motions relative to a 'Work Object'.)
+
+@bug What are good conventions for wall coordinates?  Z up?  Z normal?
+
+*/

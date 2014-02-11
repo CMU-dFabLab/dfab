@@ -1,5 +1,13 @@
+# ignore the output from Doxygen if produced in the same folder
+html-docs
+
+# ignore editor backup files
+*~
+
+# ignore compiled Python code
 *.py[cod]
 
+# the rest is boilerplate added by github
 # C extensions
 *.so
 
