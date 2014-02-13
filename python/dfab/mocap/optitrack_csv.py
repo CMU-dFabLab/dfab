@@ -283,7 +283,7 @@ class Run():
               #   self.trackable_frames.append(TrackableFrame(fields))
 
         except StopIteration:
-            pass
+            return self
 
     def __repr__( self ):
       return "run = {'dir':%s,'fi':%s}" % (self.dir,self.fi)
