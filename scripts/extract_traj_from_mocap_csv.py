@@ -10,14 +10,15 @@ import os
 import math
 import numpy as np
 import dfab.mocap.optitrack_csv as optitrack
-import dfab.mocap.quaternion as quat
-import dfab.mocap.threexform as xform
 import dfab.mocap.datafiles as datafiles
+
+import dfab.geometry.quaternion as quat
+import dfab.geometry.threexform as xform
 
 # use a more readable numpy output format
 np.set_printoptions(suppress=True, precision=5)
 
-data_folder_name = "../sample-data"
+data_folder_name = "../../dfab-data/motion_capture_example"
 csv_file_name    =  "2014-01-17-Wall-Sweep-with-Robot.csv"
 base_name        = os.path.splitext( csv_file_name )[0]
 gen_debug_files  = False
