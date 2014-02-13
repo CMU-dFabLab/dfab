@@ -10,6 +10,9 @@ This deliberately *does not* import numpy, as it is intended to work with either
 Rhino IronPython, 32-bit IronPython, or 32-or-64-bit CPython.
 
 """
+import os
+import json
+import time
 
 ################################################################
 def write_point_trajectory_file( filename, times, points ):
@@ -146,3 +149,22 @@ def read_frame_trajectory_file( filename ):
     return path, timestamps
 
 ################################################################
+def read_parameter_file( param_file_name ):
+    """Read a JSON parameter file into a plain Python dictionary."""
+    return json.loads( open( param_file_name).read() )
+
+################################################################
+def write_parameter_file( param_file_name, dictionary ):
+    """Write a dictionary of plain Python types into a JSON parameter file."""
+    # if the file exists, rename it as a backup
+    if os.path.exists( param_file_name ):
+        os.rename( param_file_name, param_file_name + '.bak.' + str(int(time.time())))
+
+    # write a new JSON file
+    param_file = open( param_file_name, 'w' )
+    param_file.write( json.dumps( dictionary, indent = 1) )
+    param_file.close()
+    return
+
+################################################################
+
