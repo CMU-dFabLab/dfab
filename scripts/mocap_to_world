@@ -55,7 +55,7 @@ if __name__=="__main__":
 
     parser.add_argument( '-v', '--verbose', action='store_true', help='Enable more detailed output.' )
     parser.add_argument( '-b', '--body', default='Robot', help = 'Name of robot marker body.' )
-    parser.add_argument( '-o', '--output', help = 'Name of output parameter file.')
+    parser.add_argument( '-j', '--json', help = 'Name of JSON parameter file to write.')
     parser.add_argument( 'csv', help = 'Filename of Optitrack CSV motion capture data to process.' )
 
     args = parser.parse_args()
@@ -95,7 +95,7 @@ if __name__=="__main__":
     mocap_coords = np.dot( robot_marker_frame, robot_mc_inv )
     print "Motion capture coordinates within world frame:\n%s" % mocap_coords
 
-    if args.output is not None:
+    if args.json is not None:
         # write any desired transforms into a JSON format
         params = { 'mocap_to_world' : mocap_coords.tolist() }
-        dfab.mocap.datafiles.write_parameter_file( args.output, params )
+        dfab.mocap.datafiles.write_parameter_file( args.json, params )
