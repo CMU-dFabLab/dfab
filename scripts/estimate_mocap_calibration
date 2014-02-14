@@ -1,0 +1,125 @@
+#!/usr/bin/env python
+"""Prototype script to extract the mocap -> world transform from a Optitrack motion capture .csv file. 
+
+Copyright (c) 2014, Garth Zeglin.  All rights reserved. Licensed under the terms
+of the BSD 3-clause license as included in LICENSE.
+
+This is still a long way from being a robust general-purpose program.
+"""
+
+import os
+import math
+import argparse
+import json
+import numpy as np
+import dfab.mocap.optitrack_csv as optitrack
+import dfab.mocap.datafiles as datafiles
+import dfab.geometry.quaternion as quat
+import dfab.geometry.threexform as xform
+import dfab.geometry
+
+# use a more readable numpy output format
+np.set_printoptions(suppress=True, precision=8)
+
+# ==================================================================
+def load_csv_data( filename, verbose = False ):
+    if verbose: print "Loading", filename
+    data = optitrack.Run().ReadFile( data_dir = ".", filename = filename, verbose = False )
+    if verbose: print "Found %d rigid bodies, %d frames." % (data.trackablecount, data.framecount )
+    if verbose: print "Bodies:",[body.name for body in data.trackables]
+    return data
+
+# ==================================================================
+def extract_stationary_body( data, body = 'Ground', verbose = False ):
+    """Generate a homogeneous transform representing the position of a body frame in
+    mocap coordinates.  This assumes the marker didn't move and just averages
+    over all components.  Converts from meters to millimeters.
+    """
+    t_body, x_body, q_body, ypr_body = data.trajectory( body )
+    x_body_avg = 1000.0 * np.mean( x_body, axis=0 )
+    q_body_avg = dfab.geometry.xyzw_to_wxyz( quat.normalize(np.mean( q_body, axis=0 )))
+    transform = dfab.geometry.pos_quat_to_threexform( x_body_avg, q_body_avg )
+    if verbose: print "The location of the frame for body %s within mocap coordinates (units are mm):\n %s" % (body, transform)
+    return transform, 
+
+#================================================================
+# begin the script
+
+if __name__=="__main__":
+
+    # process command line arguments
+
+    parser = argparse.ArgumentParser( description = """Extract the mocap ->
+    world transform from an Optitrack CSV motion capture file, assuming one of
+    the bodies tracked was a fixed marker frame mounted on the robot.""")
+
+    parser.add_argument( '-v', '--verbose', action='store_true', help='Enable more detailed output.' )
+    parser.add_argument( '-b', '--body', default='Robot', help = 'Name of robot marker body.' )
+    parser.add_argument( '-p', '--param', help = 'Name of JSON parameter file to write or update.  If the file exists it will also be used for parameter input, and renamed before writing.')
+    parser.add_argument( 'csv', help = 'Filename of Optitrack CSV motion capture data to process.' )
+
+    args = parser.parse_args()
+
+    # Extract a single transform averaging a trajectory of a stationary body.
+    data = load_csv_data( args.csv, verbose = args.verbose )
+
+    if args.verbose: print "Assuming calibration markers are designated body '%s'." % args.body
+    robot_mc = extract_stationary_body( data, args.body, verbose = args.verbose )
+
+    # Read the parameter file if it exists
+    input_params = None
+    if args.param and os.path.exists( args.param ):
+        input_params = dfab.mocap.datafiles.read_parameter_file( args.param )
+
+    # Load assumed calibration body location in world.
+    calibration_tcp = None
+    if input_params is not None: calibration_tcp = input_params.get('calibration_tcp', None)
+
+    # If no information is available on the robot position in the world for this
+    # capture, make an assumption.
+    if calibration_tcp is None:
+        calibration_tcp = { 'pos' : [ 1000.0, 1000.0, 2000.0 ], 'quat' : [ math.sqrt(2)/2, 0.0, 0.0, math.sqrt(2)/2 ] }
+        print "Warning: assuming calibration set was ", calibration_tcp
+
+    # Generate a transform representing the stationary robot TCP position.
+    robot_tcp = dfab.geometry.pos_quat_to_threexform( calibration_tcp['pos'], calibration_tcp['quat'] )
+
+    if args.verbose: print "The location of the robot TCP in world coordinates:\n", robot_tcp
+
+    # The mocap system assigned coordinates to the calibration marker frame which were
+    # aligned with the mocap system.  The following transform expresses the motion
+    # capture view of the robot marker frame in world coordinates.
+
+    # Load assumed rotation of calibration body reference frame w.r.t. world or use defaults.
+    marker_frame_ypr = None
+    if input_params is not None: marker_frame_ypr = input_params.get('marker_frame_ypr', None)
+    if marker_frame_ypr is None:
+        marker_frame_ypr = [180.0, 0.0, 90.0]
+        print "Warning: assuming calibration frame alignment:", marker_frame_ypr
+
+    marker_frame_rotation = xform.yaw_pitch_roll( *marker_frame_ypr )
+    robot_marker_frame = np.dot( robot_tcp, marker_frame_rotation )
+
+    if args.verbose: print "The location of the robot marker frame in world coordinates:\n", robot_marker_frame
+
+    # The motion capture coordinates within the world frame can be computed now, since the robot marker frame has been located within each system.
+    #   robot_marker_frame : world coords -> robot markers
+    #   robot_mc           : mocap coords -> robot markers
+    # 
+    # What we want is : world coords -> mocap coords
+    robot_mc_inv = np.linalg.inv( robot_mc )
+
+    # np.linalg.inv is returning a (1,4,4) array, I'd prefer it to remain (4,4)
+    robot_mc_inv = robot_mc_inv.reshape((4,4))
+    if args.verbose: print "The robot marker -> mocap coords transform:\n%s" % robot_mc_inv
+
+    mocap_coords = np.dot( robot_marker_frame, robot_mc_inv )
+    if args.verbose: print "Motion capture coordinates within world frame:\n%s" % mocap_coords
+
+    if args.param is not None:
+        # write any desired transforms and parameters into a JSON format
+        params = { 'mocap_to_world' : mocap_coords.tolist(),
+                   'calibration_tcp' : calibration_tcp,
+                   'marker_frame_ypr' :  marker_frame_ypr }
+        if args.verbose: print "Writing parameters to", args.param
+        dfab.mocap.datafiles.write_parameter_file( args.param, params )
