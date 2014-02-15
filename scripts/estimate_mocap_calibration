@@ -40,7 +40,7 @@ def extract_stationary_body( data, body = 'Ground', verbose = False ):
     q_body_avg = dfab.geometry.xyzw_to_wxyz( quat.normalize(np.mean( q_body, axis=0 )))
     transform = dfab.geometry.pos_quat_to_threexform( x_body_avg, q_body_avg )
     if verbose: print "The location of the frame for body %s within mocap coordinates (units are mm):\n %s" % (body, transform)
-    return transform, 
+    return transform
 
 #================================================================
 # begin the script

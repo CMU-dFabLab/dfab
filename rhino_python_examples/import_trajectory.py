@@ -10,10 +10,9 @@ Each plane is created using an origin vector and X and Y basis vectors.  The
 time stamps and Z basis vectors in the trajectory file are ignored.
 
 Inputs visible in Grasshopper:
-  (none)  
+  library_path --- full path to dFab Python library
 
 Outputs visible in Grasshopper:
-
   a  -- the list of planes
 """
 
@@ -21,7 +20,12 @@ Outputs visible in Grasshopper:
 # no_rhino = True
 no_rhino = False
 
+import sys
 import os
+
+# set up the Python load path to find the dFab library
+sys.path.append( library_path )
+
 import dfab
 import dfab.mocap.datafiles as datafiles
 

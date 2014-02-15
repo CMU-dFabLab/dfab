@@ -21,11 +21,12 @@ Tutorial and Reference Documentation:
   + @ref resources - Notes on related documentation.
 
 Automatically generated Python documentation:
-  + @ref dfab       - top-level Python module
-  + @ref dfab.mocap - modules related to motion capture data and coordinates systems (uses numpy)
-  + @ref dfab.rhino - modules intended to run inside Rhino (uses rhinoscriptsyntax)
-  + @ref dfab.debug - modules to assist with testing and debugging script code
-  + @ref scripts    - sample code and utilities for running outside Rhino
+  + @ref dfab          - top-level Python module
+  + @ref dfab.geometry - modules related to geometry and coordinates systems (uses numpy)
+  + @ref dfab.mocap    - modules related to motion capture data and coordinates systems (uses numpy)
+  + @ref dfab.rhino    - modules intended to run inside Rhino (uses rhinoscriptsyntax)
+  + @ref dfab.rapid    - modules for generating RAPID code to run on the ABB robots
+  + @ref dfab.debug    - modules to assist with testing and debugging script code
+  + @ref scripts       - sample code and utilities for running outside Rhino
   + @ref rhino_python_examples - sample code for running directly inside Rhino and Grasshopper
-
 */
