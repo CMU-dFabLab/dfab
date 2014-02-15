@@ -1,0 +1,90 @@
+#!/usr/bin/env python
+
+from PyQt4 import QtGui
+from dfab.gui.MocapProcessDialog import *
+import os
+from collections import namedtuple
+
+# the actual processing module
+import dfab.mocap.extract_trajectory
+
+#================================================================
+# Define a custom window which inherits both from the QMainWindow class
+# and the custom Ui_shellWindow defined using Qt Designer.
+
+class MocapShell( QtGui.QMainWindow, Ui_MocapProcessDialogWindow ):
+    def __init__( self, view = None):
+        QtGui.QMainWindow.__init__( self )
+        self.setupUi( self )
+
+        self.csv_path = None
+        self.params_path = None
+        self.traj_path = None
+        self.verbose_flag = False
+        self.working_dir = "/Users"
+        self.body_name = 'Trowel'
+
+        # for testing
+        self.working_dir = "/Users/garthz/src/dfab/dfab-data/motion_capture_example/"
+        self.body_name = 'Small Tool'
+
+        self.bodyName.setText( self.body_name )
+        return
+
+    def consoleprint( self, string ):
+        self.consoleOutput.appendPlainText( string )
+
+    # method to emulate printing for sys.stdout
+    def write(self, text):
+        self.consoleprint( text.rstrip('\n') )
+
+    def chooseCSVPath ( self ):
+        self.consoleprint("User wants to select Optitrack CSV Motion Capture file for input.")
+        self.csv_path =  str(QtGui.QFileDialog.getOpenFileName(self, 'Choose CSV file', self.working_dir ))
+        self.working_dir = os.path.dirname( self.csv_path )
+        self.consoleprint("Ok, will read motion capture data from '%s'." % self.csv_path)
+        self.csvName.setText( self.csv_path )
+
+    def chooseParamsPath ( self ):
+        self.consoleprint("User wants to select path for calibration parameters file.")
+        self.params_path =  str(QtGui.QFileDialog.getOpenFileName(self, 'Choose calibration parameter file', self.working_dir ))
+        self.working_dir = os.path.dirname( self.params_path )
+        self.consoleprint("Ok, will read calibration data from '%s'." % self.params_path)
+        self.paramsName.setText( self.params_path )
+
+    def chooseTrajectoryPath ( self ):
+        self.consoleprint("User wants to select path for saving trajectory file.")
+        self.traj_path =  str(QtGui.QFileDialog.getSaveFileName(self, 'Choose output trajectory file', self.working_dir ))
+        self.working_dir = os.path.dirname( self.traj_path )
+        self.consoleprint("Ok, will write trajectory to '%s'." % self.traj_path)
+        self.trajName.setText( self.traj_path )
+
+    def convertTrajectory( self ):
+        body = self.bodyName.text()
+        self.consoleprint("User initiating trajectory extraction and conversion for body '%s'." % body)
+
+        # construct a dictionary covering every possible command line argument processed by the normal script
+        arg_dict = { 'body' : body, 'output' : self.traj_path, 'param' :
+                     self.params_path, 'csv' : self.csv_path, 'verbose' : self.verbose_flag,
+                     'rate' : 12 }
+
+        # convert the dictionary to a 'named tuple' which will have attributes
+        # such as args.csv, args.param, etc.
+        args = namedtuple('Args', arg_dict.keys()) (*arg_dict.values())
+
+        # run the back end processor
+        dfab.mocap.extract_trajectory.process_trajectory( args )
+
+        self.consoleprint("Job complete.  Warning: this doesn't yet check for any error, mind the console messages.")
+
+#================================================================
+if __name__ == "__main__":
+    import sys
+    app = QtGui.QApplication(sys.argv)
+    window = MocapShell()
+
+    # reroute printed output to window; this works because there is a write method defined
+    sys.stdout = window
+
+    window.show()
+    sys.exit(app.exec_())

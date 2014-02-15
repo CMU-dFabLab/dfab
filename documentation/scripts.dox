@@ -1,0 +1,54 @@
+/**
+@page scripts Script Tutorial
+@brief Overview of the command-line scripts.
+
+
+Motion Capture Trajectory Processing
+====================================
+
+There are two command line scripts for processing Optitrack CSV files:
+
++ estimate_mocap_calibration -- compute a calibration file with the transform from motion capture coordinates to the world (robot) coordinates.
++ trajectory_from_mocap -- extract a single rigid body path from a motion capture file, use a calibration file to transform it into world coordinates, and write a simple text file which can be read into Rhino as a path.
+
+The following examples assume that dfab and dfab-data package were unpacked side-by-side and that the dfab Python library path is correctly configured.
+
+estimate_mocap_calibration
+--------------------------
+
+> cd dfab-data/motion_capture_example \n
+> python ../../dfab/scripts/estimate_mocap_calibration   2014-01-17-Wall-Sweep-with-Robot.csv   -p calibration_params -v
+
+This will do the following:
+
++ read the Optitrack file '2014-01-17-Wall-Sweep-with-Robot.csv'
++ read in an existing calibration file 'calibration_params' or create a new one
++ compute the relationship between the mocap and world coordinate frame using the default Robot body assumed to be in a known reference position
++ write a new calibration file
++ print a series of matrices to show results (-v means verbose)
+
+The calibration file can be used until the cameras move.
+
+
+trajectory_from_mocap
+---------------------
+
+> cd dfab-data/motion_capture_example \n
+> python ../../dfab/scripts/trajectory_from_mocap   calibration_params   2014-01-17-Wall-Sweep-with-Robot.csv   -b 'Small Tool'   -o sweep_trajectory
+
+This will do the following:
+
++ read the Optitrack file '2014-01-17-Wall-Sweep-with-Robot.csv'
++ read in an existing calibration file 'calibration_params'
++ extract the trajectory for body 'Small Tool' from the motion capture data
++ transform it into the world (robot) coordinate frame
++ write the trajectory to the new file 'sweep_trajectory' as a series of time-stamped coordinate frames
+
+The sweep_trajectory file can be loaded into Rhino using the
+dfab.mocap.datafiles.read_frame_trajectory_file() function; see
+rhino_python_examples/import_trajectory.py for an example.
+
+
+*/
+
+

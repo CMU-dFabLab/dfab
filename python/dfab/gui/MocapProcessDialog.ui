@@ -1,0 +1,199 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ui version="4.0">
+ <class>MocapProcessDialogWindow</class>
+ <widget class="QMainWindow" name="MocapProcessDialogWindow">
+  <property name="geometry">
+   <rect>
+    <x>0</x>
+    <y>0</y>
+    <width>579</width>
+    <height>444</height>
+   </rect>
+  </property>
+  <property name="windowTitle">
+   <string>Motion Capture Processor</string>
+  </property>
+  <widget class="QWidget" name="centralwidget">
+   <property name="sizePolicy">
+    <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
+     <horstretch>0</horstretch>
+     <verstretch>0</verstretch>
+    </sizepolicy>
+   </property>
+   <layout class="QGridLayout" name="gridLayout">
+    <item row="0" column="0">
+     <layout class="QVBoxLayout" name="verticalLayout">
+      <item>
+       <layout class="QHBoxLayout" name="horizontalLayout_2">
+        <item>
+         <widget class="QPushButton" name="csvChooseButton">
+          <property name="text">
+           <string>Choose CSV</string>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QLineEdit" name="csvName"/>
+        </item>
+       </layout>
+      </item>
+      <item>
+       <layout class="QHBoxLayout" name="horizontalLayout_3">
+        <item>
+         <widget class="QPushButton" name="paramsChooseButton">
+          <property name="text">
+           <string>Choose Params</string>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QLineEdit" name="paramsName"/>
+        </item>
+       </layout>
+      </item>
+      <item>
+       <layout class="QHBoxLayout" name="horizontalLayout_4">
+        <item>
+         <widget class="QPushButton" name="chooseTrajButton">
+          <property name="text">
+           <string>Choose Trajectory</string>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QLineEdit" name="trajName"/>
+        </item>
+       </layout>
+      </item>
+      <item>
+       <layout class="QHBoxLayout" name="horizontalLayout_5">
+        <item>
+         <widget class="QLabel" name="bodyLabel">
+          <property name="text">
+           <string>Body Name</string>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QLineEdit" name="bodyName"/>
+        </item>
+       </layout>
+      </item>
+      <item>
+       <widget class="QPushButton" name="convertButton">
+        <property name="text">
+         <string>Convert Trajectory</string>
+        </property>
+       </widget>
+      </item>
+     </layout>
+    </item>
+    <item row="1" column="0">
+     <widget class="QPlainTextEdit" name="consoleOutput">
+      <property name="horizontalScrollBarPolicy">
+       <enum>Qt::ScrollBarAlwaysOff</enum>
+      </property>
+     </widget>
+    </item>
+   </layout>
+  </widget>
+  <widget class="QMenuBar" name="menubar">
+   <property name="geometry">
+    <rect>
+     <x>0</x>
+     <y>0</y>
+     <width>579</width>
+     <height>22</height>
+    </rect>
+   </property>
+   <widget class="QMenu" name="menuTitle">
+    <property name="title">
+     <string>File</string>
+    </property>
+   </widget>
+   <widget class="QMenu" name="menuSettings">
+    <property name="title">
+     <string>Settings</string>
+    </property>
+   </widget>
+   <addaction name="menuTitle"/>
+   <addaction name="menuSettings"/>
+  </widget>
+  <widget class="QStatusBar" name="statusbar"/>
+ </widget>
+ <resources/>
+ <connections>
+  <connection>
+   <sender>csvChooseButton</sender>
+   <signal>clicked()</signal>
+   <receiver>MocapProcessDialogWindow</receiver>
+   <slot>chooseCSVPath()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>76</x>
+     <y>50</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>289</x>
+     <y>221</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>paramsChooseButton</sender>
+   <signal>clicked()</signal>
+   <receiver>MocapProcessDialogWindow</receiver>
+   <slot>chooseParamsPath()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>85</x>
+     <y>93</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>289</x>
+     <y>221</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>chooseTrajButton</sender>
+   <signal>clicked()</signal>
+   <receiver>MocapProcessDialogWindow</receiver>
+   <slot>chooseTrajectoryPath()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>89</x>
+     <y>141</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>136</x>
+     <y>232</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>convertButton</sender>
+   <signal>clicked()</signal>
+   <receiver>MocapProcessDialogWindow</receiver>
+   <slot>convertTrajectory()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>504</x>
+     <y>214</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>482</x>
+     <y>423</y>
+    </hint>
+   </hints>
+  </connection>
+ </connections>
+ <slots>
+  <slot>commandEntered(QString)</slot>
+  <slot>resetPressed()</slot>
+  <slot>chooseCSVPath()</slot>
+  <slot>chooseParamsPath()</slot>
+  <slot>chooseTrajectoryPath()</slot>
+  <slot>convertTrajectory()</slot>
+ </slots>
+</ui>
