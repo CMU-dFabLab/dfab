@@ -24,10 +24,6 @@ class MocapShell( QtGui.QMainWindow, Ui_MocapProcessDialogWindow ):
         self.working_dir = "/Users"
         self.body_name = 'Trowel'
 
-        # for testing
-        self.working_dir = "/Users/garthz/src/dfab/dfab-data/motion_capture_example/"
-        self.body_name = 'Small Tool'
-
         self.bodyName.setText( self.body_name )
         return
 
