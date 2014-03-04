@@ -10,6 +10,7 @@ import os
 import math
 import argparse
 import json
+import traceback
 import numpy as np
 import dfab.mocap.optitrack_csv as optitrack
 import dfab.mocap.datafiles as datafiles
@@ -66,13 +67,32 @@ def process_trajectory( args ):
     """Process a CSV file into a trajectory file."""
 
     # Read the parameter file and retrieve the mocap calibration matrix.
-    input_params = dfab.mocap.datafiles.read_parameter_file( args.param )
-    mocap_to_world = np.array( input_params['mocap_to_world'] )
-
+    try:
+        input_params = dfab.mocap.datafiles.read_parameter_file( args.param )
+        mocap_to_world = np.array( input_params['mocap_to_world'] )
+    except:
+        print "Unable to load parameter file: " + str(traceback.format_exc()) + \
+            "\nThe script was unable to load the parameter file.  The parameter file " + \
+            "is the output file from estimate_mocap_calibration which defines the " + \
+            "relationship between the motion capture coordinates and robot coordinates."
+        raise
 
     # Extract a single trajectory from the CSV file in mocap coordinates.
-    data = load_csv_data( args.csv, verbose = args.verbose )
-    times, x_tool, q_tool, ypr_tool = extract_trajectory( data, subsampling_ratio = args.rate, body = args.body, verbose = args.verbose )
+    try:
+        data = load_csv_data( args.csv, verbose = args.verbose )
+    except:
+        print "Unable to load CSV file: " + str(traceback.format_exc()) + \
+            "\nThe script was unable to load the Optitrack CSV file.  The CSV " +\
+            "is the complete motion capture data saved from the Optitrack Motive software."
+        raise
+
+    try:
+        times, x_tool, q_tool, ypr_tool = extract_trajectory( data, subsampling_ratio = args.rate, body = args.body, verbose = args.verbose )
+    except:
+        print "Unable to extract trajectory: " + str(traceback.format_exc()) + \
+            "\nThe script was unable to extract body " + args.body + " from the Optitrack CSV file."
+        raise
+
 
     # Generate a homogeneous transform representing each tool frame.
     tool_traj = [ dfab.geometry.pos_quat_to_threexform( position, orientation ) for (position, orientation) in zip( x_tool, q_tool) ]
