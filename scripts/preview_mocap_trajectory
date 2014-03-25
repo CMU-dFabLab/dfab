@@ -1,0 +1,171 @@
+#!/usr/bin/env python
+
+"""Script to display a motion capture trajectory file within the context of the dFab Lab.
+
+Copyright (c) 2014, Garth Zeglin.  All rights reserved. Licensed under the terms
+of the BSD 3-clause license as included in LICENSE.
+
+This is more of a simple tool prototype than a general-use program.
+
+This uses some abstract base classes for creating a window with some standard
+elements and an OpenGL viewer for rendering a scene.
+"""
+
+import sys
+import argparse
+import numpy as np
+import bisect
+
+from PyQt4 import QtGui
+from PyQt4.QtOpenGL import *
+from OpenGL.GL import *
+
+import dfab.mocap.datafiles as datafiles
+
+import dfab.gui.gl_camera as camera
+import dfab.gui.gl_drawing as gl_drawing
+from dfab.gui.dFabLabViewWidget import *
+from dfab.gui.RobotConsole import *
+from dfab.gui.gl_abb_6640_on_track import gl_abb_6640_on_track_draw
+
+import dfab.ABB6640.kinematics as kinematics
+import dfab.ABB6640.parameters as parameters
+
+# use a more readable numpy output format
+np.set_printoptions(suppress=True, precision=5)
+
+################################################################
+class TrajectoryViewWidget( dFabLabViewWidget ):
+    """An OpenGL 3D view widget for rendering trajectory data.
+
+    This is built over a the dFabLabViewWidget base class which provides basic
+    3D support, camera interaction support, and can render the static room
+    elements.
+
+    """
+    def __init__(self, path, timestamps ):
+        dFabLabViewWidget.__init__(self)
+
+        # set up the camera view
+        self.camera.set_location( 2.0, -6.0, 2.0 )
+
+        # save the trajectory data
+        self.path = path
+        self.timestamps = timestamps
+        self.t_first = timestamps[0]
+        self.t_last  = timestamps[-1]
+
+        # the current trajectory segment to draw is represented by a list of transforms
+        self.positions = []
+        for i in range(60): 
+            self.positions.append( np.identity(4) )
+
+        return
+
+    def write_frame_record_to_transform( self, frame, transform ):
+        """Write a 2-D frame list in file format into a numpy matrix."""
+        # write the frame components into the homogeneous transform
+        transform[0:3, 3] = frame[0] # origin
+        transform[0:3, 0] = frame[1] # X axis
+        transform[0:3, 1] = frame[2] # Y axis
+        transform[0:3, 2] = frame[3] # Z axis
+
+        # scale the millimeters from the file to meters for the graphics
+        transform[0:3, 3] *= 0.001
+        return
+
+    def update_position( self, nearest_time ):
+        """Given a timestamp, find the closest trajectory sample less than or equal to the specified time and process it for rendering."""
+        idx = bisect.bisect( self.timestamps, nearest_time )
+        if idx > 0: idx -= 1
+
+        # convert a range of poses for drawing leading up to the target pose
+        first = max(idx - len(self.positions), 0)
+        
+        for i in range(len(self.positions)):
+            self.write_frame_record_to_transform( self.path[first + i], self.positions[i] )
+        
+        # return the discovered point
+        return idx
+
+    def setTime( self, value ):
+        """Set the sample time to display; callback from the time slider."""
+        target_time = self.t_first + ((0.0001 * value) * (self.t_last - self.t_first))
+        idx = self.update_position( target_time )
+        # print "setTime received %d, looked for %f, found sample at %d with timestamp %f" % (value, target_time, idx, self.timestamps[idx])
+
+        # trigger a redisplay
+        self.updateGL()
+
+    def drawRobot( self ):
+        """Callback from the parent class to draw the robot and any other dynamic elements."""
+
+        # draw the robot in the home position just for reference
+        gl_abb_6640_on_track_draw( False, 0,0,0,0,0,0,0 )
+
+        # FIXME: it appears that actual ABB vertical origin is the top of the track, so for now, 
+        # shift up the origin for the mocap data
+        glPushMatrix()
+        glTranslatef( 0.0, 0.0, parameters.track_z_offset )
+
+        # draw a set of mocap samples as coordinate frames
+        for i in range(len(self.positions)):
+            gl_drawing.gl_draw_transform( self.positions[i], length = 0.2 )
+
+        glPopMatrix()
+        return
+
+################################################################
+class TrajectoryViewConsole ( RobotConsole ):
+    """A GUI window for viewing a trajectory using a time slider.
+
+    This is built over the base RobotConsole class which provides support for a
+    3D view area, console output, and a command line.
+    """
+
+    def __init__(self, view):
+        """Initialize the GUI given a specific 3D viewer object."""
+
+        RobotConsole.__init__(self, view)
+        # self.addButton ( 'Start', view.start )
+        # self.addButton ( 'Stop', view.stop )
+        self.addSlider( 'Time', view.setTime )
+        self.show()
+
+    # method to emulate printing for sys.stdout
+    def write(self, text):
+        self.consoleprint( text.rstrip() )
+        
+################################################################
+
+if __name__ == "__main__":
+
+    # process command line arguments
+    parser = argparse.ArgumentParser( description = """Render a trajectory file in 3D using OpenGL in an interactive Qt application.""" )
+    parser.add_argument( '-v', '--verbose', action='store_true', help='Enable more detailed output.' )
+    parser.add_argument( 'traj', help = 'Filename of trajectory file to show.')
+
+    args = parser.parse_args()
+
+    # load the trajectory data
+    filename = args.traj
+    if args.verbose: print "Loading", filename
+    path, timestamps = datafiles.read_frame_trajectory_file( filename )
+    
+    # initialize the Qt system itself
+    app = QtGui.QApplication(sys.argv)
+
+    # create a rendering widget to draw the 3D scene
+    trajectory_view = TrajectoryViewWidget( path, timestamps )
+
+    # create the interface window, including the 3D viewer
+    window = TrajectoryViewConsole( view = trajectory_view )
+
+    # reroute printed output to the console window; this works because there is a write method defined
+    sys.stdout = window
+    print "Starting up mocap trajectory previewer."
+    print "Loaded %s." % filename
+    print "Found %d points with times ranging from %f to %f." % (len(path), timestamps[0], timestamps[-1] )
+
+    # run the event loop until the user is done
+    sys.exit(app.exec_())
