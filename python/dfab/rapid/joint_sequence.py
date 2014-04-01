@@ -119,7 +119,6 @@ if __name__ == "__main__":
              [1.75,  [ 1.3,  0.0,  0.1, -0.1,  0.0,  0.0,  0.2  ]],
     ]
 
-    print "Resulting program:"
     print single_trajectory_program( data, a_unit = 'radian', l_unit = 'meter' )
 
 # ###############################################################
